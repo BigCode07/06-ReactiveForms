@@ -1,8 +1,32 @@
-import { FormGroup } from '@angular/forms';
+import { FormArray, FormGroup, ValidationErrors } from '@angular/forms';
 
 export class FormUtils {
+  // Expresiones regulares
+
+  static getTextError(errors: ValidationErrors) {
+    for (const key of Object.keys(errors)) {
+      switch (key) {
+        case 'required':
+          return 'Este campo es requerido';
+
+        case 'minlength':
+          return `Mínimo de ${errors['minlength'].requiredLength} caracteres.`;
+
+        case 'min':
+          return `Valor mínimo de ${errors['min'].min}`;
+
+        case 'email':
+          return `El valor ingresado no es un correo electronico`;
+      }
+    }
+
+    return null;
+  }
+
   static isValidField(form: FormGroup, fieldName: string): boolean | null {
-    return form.controls[fieldName].errors && form.controls[fieldName].touched;
+    return (
+      !!form.controls[fieldName].errors && form.controls[fieldName].touched
+    );
   }
 
   static getFieldError(form: FormGroup, fieldName: string): string | null {
@@ -10,19 +34,25 @@ export class FormUtils {
 
     const errors = form.controls[fieldName].errors ?? {};
 
-    for (const key of Object.keys(errors)) {
-      switch (key) {
-        case 'required':
-          return 'Este campo es requerido';
+    return FormUtils.getTextError(errors);
+  }
 
-        case 'minlength':
-          return `Mínimo de ${errors['minlength'].requiredLength} caracteres`;
+  static isValidFieldInArray(formArray: FormArray, index: number) {
+    return (
+      formArray.controls[index].errors && formArray.controls[index].touched
+    );
+  }
 
-        case 'min':
-          return `Valor mínimo de ${errors['min'].min}`;
-      }
-    }
+  static getFieldErrorInArray(
+    formArray: FormArray,
+    index: number
+  ): string | null {
+    if (formArray.controls.length === 0) return null;
 
-    return null;
+    const errors = formArray.controls[index].errors ?? {};
+
+    return FormUtils.getTextError(errors);
   }
 }
+
+// FormUtils.isValidField()
